@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理面板 - 智慧感測研究室</title>
+<style>
+  :root {
+    --navy: #16365c;
+    --navy-dark: #0a1f38;
+    --coffee: #8a5a3c;
+    --coffee-light: #b07d52;
+    --gray-bg: #f6f5f2;
+    --text-main: #1c1c1c;
+    --text-light: #6b7280;
+    --white: #ffffff;
+    --radius: 10px;
+    --shadow: 0 4px 16px rgba(15, 42, 74, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-main);
+    background: var(--gray-bg);
+    line-height: 1.6;
+  }
+
+  .topbar {
+    background: var(--navy);
+    color: var(--white);
+    border-bottom: 3px solid var(--coffee);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar h1 { font-size: 1.2rem; }
+
+  .logout-btn {
+    background: rgba(255,255,255,0.2);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .panel {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+  }
+
+  .panel h2 {
+    color: var(--navy);
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--coffee);
+  }
+
+  /* 前台預覽 */
+  .preview-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e7ebf1;
+  }
+
+  .preview-section:last-child {
+    border-bottom: none;
+  }
+
+  .preview-section h3 {
+    color: var(--navy);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .member-item, .topic-item, .news-item {
+    background: var(--gray-bg);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
+  .member-item h4, .topic-item h4, .news-item h4 {
+    color: var(--navy);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+
+  .member-item .meta {
+    color: var(--coffee);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .member-item p, .topic-item p, .news-item p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  /* 編輯表單 */
+  .edit-panel h3 {
+    color: var(--coffee);
+    font-size: 1.1rem;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #e7ebf1;
+  }
+
+  .edit-panel h3:first-of-type {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d6dce5;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 50px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    display: inline-block;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .btn-coffee {
+    background: var(--coffee);
+    color: var(--white);
+    flex: 1;
+  }
+
+  .btn-coffee:hover {
+    background: var(--coffee-light);
+  }
+
+  .btn-danger {
+    background: #b3261e;
+    color: var(--white);
+    padding: 6px 10px;
+  }
+
+  .btn-danger:hover {
+    background: #8e1d1a;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--navy);
+  }
+
+  .btn-outline:hover {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .row-item {
+    background: var(--gray-bg);
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .row-item .info h4 {
+    color: var(--navy);
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+  }
+
+  .row-item .info p {
+    color: var(--text-light);
+    font-size: 0.8rem;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .row-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .empty-msg {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding: 8px 0;
+  }
+
+  @media (max-width: 1200px) {
+    .container {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🔬 管理面板 - 即時編輯測試</h1>
+  <button class="logout-btn" id="logoutBtn">登出</button>
+</div>
+
+<div class="container">
+  <!-- 左邊：前台預覽 -->
+  <div class="panel">
+    <h2>📱 前台預覽（實時更新）</h2>
+    
+    <div class="preview-section">
+      <h3>研究成員</h3>
+      <div id="previewMembers"></div>
+    </div>
+
+    <div class="preview-section">
+      <h3>研究主題</h3>
+      <div id="previewTopics"></div>
+    </div>
+
+    <div class="preview-section">
+      <h3>最新消息</h3>
+      <div id="previewNews"></div>
+    </div>
+  </div>
+
+  <!-- 右邊：後台編輯 -->
+  <div class="panel edit-panel">
+    <h2>✏️ 後台管理</h2>
+
+    <!-- 成員管理 -->
+    <h3>➕ 新增成員</h3>
+    <form id="formMembers" style="margin-bottom: 16px;">
+      <div class="field">
+        <label>姓名</label>
+        <input name="name" required placeholder="例：王志明 教授">
+      </div>
+      <div class="field">
+        <label>職稱</label>
+        <input name="title" required placeholder="例：博士生">
+      </div>
+      <div class="field">
+        <label>研究方向</label>
+        <textarea name="field" required></textarea>
+      </div>
+      <div class="field">
+        <label>顯示順序</label>
+        <input name="sort_order" type="number" value="0">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-coffee">新增成員</button>
+      </div>
+    </form>
+
+    <h3>現有成員</h3>
+    <div id="listMembers"></div>
+
+    <!-- 主題管理 -->
+    <h3>➕ 新增研究主題</h3>
+    <form id="formTopics" style="margin-bottom: 16px;">
+      <div class="field">
+        <label>主題名稱</label>
+        <input name="title" required>
+      </div>
+      <div class="field">
+        <label>說明</label>
+        <textarea name="description" required></textarea>
+      </div>
+      <div class="field">
+        <label>圖示</label>
+        <select name="icon">
+          <option value="pulse">pulse - 心跳</option>
+          <option value="globe">globe - 地球</option>
+          <option value="chip">chip - 晶片</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>顯示順序</label>
+        <input name="sort_order" type="number" value="0">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-coffee">新增主題</button>
+      </div>
+    </form>
+
+    <h3>現有主題</h3>
+    <div id="listTopics"></div>
+
+    <!-- 消息管理 -->
+    <h3>➕ 新增最新消息</h3>
+    <form id="formNews" style="margin-bottom: 16px;">
+      <div class="field">
+        <label>發布日期</label>
+        <input name="published_date" type="date" required>
+      </div>
+      <div class="field">
+        <label>標題</label>
+        <input name="title" required>
+      </div>
+      <div class="field">
+        <label>說明</label>
+        <textarea name="description" required></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-coffee">新增消息</button>
+      </div>
+    </form>
+
+    <h3>現有消息</h3>
+    <div id="listNews"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://zftyiqfqwuhxvibhxosi.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Ux9Ya2ULT6XjAuKP85aJnw_nthS-rJ3';
+  const ADMIN_EMAIL = 'taigiendio@gmail.com';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
+  }
+
+  // 檢查登入
+  async function checkLogin() {
+    const { data } = await supabaseClient.auth.getSession();
+    if (!data.session || data.session.user.email !== ADMIN_EMAIL) {
+      location.href = '/admin.html';
+    }
+  }
+
+  // 登出
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    location.href = '/admin.html';
+  });
+
+  // 載入成員
+  async function loadMembers() {
+    const { data } = await supabaseClient.from('members').select('*').order('sort_order', { ascending: true });
+    document.getElementById('previewMembers').innerHTML = (data?.length ? data : [])
+      .map(m => `
+        <div class="member-item">
+          <h4>${escapeHtml(m.name)}</h4>
+          <div class="meta">${escapeHtml(m.title)}</div>
+          <p>${escapeHtml(m.field)}</p>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無成員</div>';
+
+    document.getElementById('listMembers').innerHTML = (data?.length ? data : [])
+      .map(m => `
+        <div class="row-item">
+          <div class="info">
+            <h4>${escapeHtml(m.name)}</h4>
+            <p>${escapeHtml(m.title)} (順序: ${m.sort_order})</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger" onclick="deleteRow('members', ${m.id}, loadMembers)">刪除</button>
+          </div>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無成員</div>';
+  }
+
+  // 載入主題
+  async function loadTopics() {
+    const { data } = await supabaseClient.from('topics').select('*').order('sort_order', { ascending: true });
+    document.getElementById('previewTopics').innerHTML = (data?.length ? data : [])
+      .map(t => `
+        <div class="topic-item">
+          <h4>${escapeHtml(t.title)}</h4>
+          <p>${escapeHtml(t.description)}</p>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無主題</div>';
+
+    document.getElementById('listTopics').innerHTML = (data?.length ? data : [])
+      .map(t => `
+        <div class="row-item">
+          <div class="info">
+            <h4>${escapeHtml(t.title)}</h4>
+            <p>${escapeHtml(t.icon)} (順序: ${t.sort_order})</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger" onclick="deleteRow('topics', ${t.id}, loadTopics)">刪除</button>
+          </div>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無主題</div>';
+  }
+
+  // 載入消息
+  async function loadNews() {
+    const { data } = await supabaseClient.from('news').select('*').order('published_date', { ascending: false });
+    document.getElementById('previewNews').innerHTML = (data?.length ? data : [])
+      .map(n => `
+        <div class="news-item">
+          <h4>${escapeHtml(n.title)}</h4>
+          <p>${escapeHtml(n.published_date)}</p>
+          <p>${escapeHtml(n.description)}</p>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無消息</div>';
+
+    document.getElementById('listNews').innerHTML = (data?.length ? data : [])
+      .map(n => `
+        <div class="row-item">
+          <div class="info">
+            <h4>${escapeHtml(n.title)}</h4>
+            <p>${escapeHtml(n.published_date)}</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger" onclick="deleteRow('news', ${n.id}, loadNews)">刪除</button>
+          </div>
+        </div>
+      `).join('') || '<div class="empty-msg">暫無消息</div>';
+  }
+
+  // 新增成員
+  document.getElementById('formMembers').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    await supabaseClient.from('members').insert({
+      name: f.name.value.trim(),
+      title: f.title.value.trim(),
+      field: f.field.value.trim(),
+      sort_order: Number(f.sort_order.value) || 0
+    });
+    f.reset();
+    loadMembers();
+  });
+
+  // 新增主題
+  document.getElementById('formTopics').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    await supabaseClient.from('topics').insert({
+      icon: f.icon.value,
+      title: f.title.value.trim(),
+      description: f.description.value.trim(),
+      sort_order: Number(f.sort_order.value) || 0
+    });
+    f.reset();
+    loadTopics();
+  });
+
+  // 新增消息
+  document.getElementById('formNews').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    await supabaseClient.from('news').insert({
+      published_date: f.published_date.value,
+      title: f.title.value.trim(),
+      description: f.description.value.trim()
+    });
+    f.reset();
+    loadNews();
+  });
+
+  // 刪除
+  window.deleteRow = async function (table, id, reload) {
+    if (!confirm('確定要刪除？')) return;
+    await supabaseClient.from(table).delete().eq('id', id);
+    reload();
+  };
+
+  // 初始化
+  checkLogin();
+  loadMembers();
+  loadTopics();
+  loadNews();
+</script>
+</body>
+</html>
