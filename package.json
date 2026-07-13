@@ -1,0 +1,14 @@
+{
+  "name": "lab-website",
+  "version": "1.0.0",
+  "description": "智慧感測研究室網站",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve",
+    "start": "serve"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
